@@ -1,12 +1,12 @@
-import React, { useState } from 'react';
-import { Formation, Position } from '../types';
+import React, { useState } from "react";
+import { Formation, Position } from "../types";
 
 interface CustomFormationModalProps {
   show: boolean;
   onClose: () => void;
   onSave: (formation: Formation) => void;
   currentPositions: Position[];
-  team: 'home' | 'away';
+  team: "home" | "away";
 }
 
 const CustomFormationModal: React.FC<CustomFormationModalProps> = ({
@@ -14,14 +14,14 @@ const CustomFormationModal: React.FC<CustomFormationModalProps> = ({
   onClose,
   onSave,
   currentPositions,
-  team
+  team,
 }) => {
-  const [formationName, setFormationName] = useState('');
-  const [formationDescription, setFormationDescription] = useState('');
+  const [formationName, setFormationName] = useState("");
+  const [formationDescription, setFormationDescription] = useState("");
 
   const handleSave = () => {
     if (!formationName.trim()) {
-      alert('フォーメーション名を入力してください');
+      alert("フォーメーション名を入力してください");
       return;
     }
 
@@ -29,38 +29,43 @@ const CustomFormationModal: React.FC<CustomFormationModalProps> = ({
       id: `custom-${Date.now()}`,
       name: formationName.trim(),
       description: formationDescription.trim() || undefined,
-      positions: currentPositions.map(pos => ({ ...pos }))
+      positions: currentPositions.map((pos) => ({ ...pos })),
     };
 
     onSave(newFormation);
-    setFormationName('');
-    setFormationDescription('');
+    setFormationName("");
+    setFormationDescription("");
     onClose();
   };
 
   const handleClose = () => {
-    setFormationName('');
-    setFormationDescription('');
+    setFormationName("");
+    setFormationDescription("");
     onClose();
   };
 
   if (!show) return null;
 
   return (
-    <div className="modal d-block" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
+    <div
+      className="modal d-block"
+      style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
+    >
       <div className="modal-dialog modal-dialog-centered">
         <div className="modal-content">
           <div className="modal-header">
-            <h5 className={`modal-title ${team === 'home' ? 'text-primary' : 'text-danger'}`}>
+            <h5
+              className={`modal-title ${team === "home" ? "text-primary" : "text-danger"}`}
+            >
               🎯 カスタムフォーメーション作成
             </h5>
-            <button 
-              type="button" 
-              className="btn-close" 
+            <button
+              type="button"
+              className="btn-close"
               onClick={handleClose}
             ></button>
           </div>
-          
+
           <div className="modal-body">
             <div className="mb-3">
               <label className="form-label fw-bold">フォーメーション名 *</label>
@@ -74,7 +79,7 @@ const CustomFormationModal: React.FC<CustomFormationModalProps> = ({
               />
               <div className="form-text">現在の選手配置を保存します</div>
             </div>
-            
+
             <div className="mb-3">
               <label className="form-label fw-bold">説明（任意）</label>
               <textarea
@@ -88,22 +93,24 @@ const CustomFormationModal: React.FC<CustomFormationModalProps> = ({
             </div>
 
             <div className="alert alert-info">
-              <strong>💡 ヒント:</strong> 現在ピッチ上の{team === 'home' ? 'ホームチーム' : 'アウェイチーム'}の選手配置が保存されます。
+              <strong>💡 ヒント:</strong> 現在ピッチ上の
+              {team === "home" ? "ホームチーム" : "アウェイチーム"}
+              の選手配置が保存されます。
               保存後は、フォーメーション選択リストから呼び出せます。
             </div>
           </div>
-          
+
           <div className="modal-footer">
-            <button 
-              type="button" 
-              className="btn btn-secondary" 
+            <button
+              type="button"
+              className="btn btn-secondary"
               onClick={handleClose}
             >
               キャンセル
             </button>
-            <button 
-              type="button" 
-              className="btn btn-primary" 
+            <button
+              type="button"
+              className="btn btn-primary"
               onClick={handleSave}
             >
               💾 保存

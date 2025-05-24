@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import SoccerPitch from './components/SoccerPitch';
 import FormationSelector from './components/FormationSelector';
 import CustomFormationModal from './components/CustomFormationModal';
+import PlayerList from './components/PlayerList';
+import AutoNumbering from './components/AutoNumbering';
 import { Player, Team, Formation } from './types';
 import { PRESET_FORMATIONS, getFormationById } from './data/formations';
 
@@ -12,6 +14,7 @@ const App: React.FC = () => {
   const [modalTeam, setModalTeam] = useState<'home' | 'away'>('home');
   const [homeSelectedFormation, setHomeSelectedFormation] = useState(PRESET_FORMATIONS[0].id);
   const [awaySelectedFormation, setAwaySelectedFormation] = useState(PRESET_FORMATIONS[0].id);
+  const [highlightedPlayer, setHighlightedPlayer] = useState<string | undefined>();
 
   // 全フォーメーションリスト（プリセット + カスタム）
   const allFormations = [...PRESET_FORMATIONS, ...customFormations];
@@ -27,6 +30,7 @@ const App: React.FC = () => {
         name: `選手${index + 1}`,
         number: index + 1,
         position: { ...pos },
+        playerPosition: index === 0 ? 'GK' : index < 5 ? 'DF' : index < 8 ? 'MF' : 'FW',
         team: 'home'
       })),
       formations: {
@@ -51,6 +55,7 @@ const App: React.FC = () => {
         name: `選手${index + 1}`,
         number: index + 1,
         position: { x: pos.x, y: 600 - pos.y }, // Y座標を反転（相手陣営）
+        playerPosition: index === 0 ? 'GK' : index < 5 ? 'DF' : index < 8 ? 'MF' : 'FW',
         team: 'away'
       })),
       formations: {
@@ -116,6 +121,57 @@ const App: React.FC = () => {
     }
   };
 
+  // 選手データ更新
+  const handlePlayerUpdate = (playerId: string, updates: Partial<Player>) => {
+    if (playerId.startsWith('home-')) {
+      setHomeTeam(prev => ({
+        ...prev,
+        players: prev.players.map(player => 
+          player.id === playerId 
+            ? { ...player, ...updates }
+            : player
+        )
+      }));
+    } else {
+      setAwayTeam(prev => ({
+        ...prev,
+        players: prev.players.map(player => 
+          player.id === playerId 
+            ? { ...player, ...updates }
+            : player
+        )
+      }));
+    }
+  };
+
+  // 自動背番号設定
+  const handleAutoNumbering = (team: 'home' | 'away', updates: Array<{ id: string; number: number }>) => {
+    if (team === 'home') {
+      setHomeTeam(prev => ({
+        ...prev,
+        players: prev.players.map(player => {
+          const update = updates.find(u => u.id === player.id);
+          return update ? { ...player, number: update.number } : player;
+        })
+      }));
+    } else {
+      setAwayTeam(prev => ({
+        ...prev,
+        players: prev.players.map(player => {
+          const update = updates.find(u => u.id === player.id);
+          return update ? { ...player, number: update.number } : player;
+        })
+      }));
+    }
+  };
+  // 選手ハイライト表示
+  const handlePlayerFocus = (playerId: string) => {
+    setHighlightedPlayer(playerId);
+    // 3秒後にハイライト解除
+    setTimeout(() => {
+      setHighlightedPlayer(undefined);
+    }, 3000);
+  };
   // カスタムフォーメーション作成
   const handleCreateCustomFormation = (team: 'home' | 'away') => {
     setModalTeam(team);
@@ -257,6 +313,39 @@ const App: React.FC = () => {
             onPhaseChange={(phase) => handlePhaseChange('away', phase)}
           />
 
+          {/* 選手リスト */}
+          <PlayerList
+            players={homeTeam.players}
+            team="home"
+            onPlayerUpdate={handlePlayerUpdate}
+            onPlayerFocus={handlePlayerFocus}
+          />
+          
+          <div className="mt-3">
+            <AutoNumbering
+              players={homeTeam.players}
+              team="home"
+              onApplyNumbering={(updates) => handleAutoNumbering('home', updates)}
+            />
+          </div>
+          
+          <div className="mt-3">
+            <PlayerList
+              players={awayTeam.players}
+              team="away"
+              onPlayerUpdate={handlePlayerUpdate}
+              onPlayerFocus={handlePlayerFocus}
+            />
+          </div>
+          
+          <div className="mt-3">
+            <AutoNumbering
+              players={awayTeam.players}
+              team="away"
+              onApplyNumbering={(updates) => handleAutoNumbering('away', updates)}
+            />
+          </div>
+
           {/* チーム情報 */}
           <div className="card">
             <div className="card-header">
@@ -340,6 +429,7 @@ const App: React.FC = () => {
               awayPlayers={awayTeam.players}
               onPlayerDrag={handlePlayerDrag}
               displayMode={displayMode}
+              highlightedPlayer={highlightedPlayer}
             />
           </div>
           

@@ -3,11 +3,22 @@ export interface Position {
   y: number;
 }
 
+export type PlayerPosition = 'GK' | 'DF' | 'MF' | 'FW';
+
+export interface Player {
+  id: stringexport interface Position {
+  x: number;
+  y: number;
+}
+
+export type PlayerPosition = 'GK' | 'DF' | 'MF' | 'FW';
+
 export interface Player {
   id: string;
   name: string;
   number: number;
   position: Position;
+  playerPosition: PlayerPosition;
   team: 'home' | 'away';
 }
 
