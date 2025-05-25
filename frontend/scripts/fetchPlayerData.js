@@ -29,7 +29,7 @@ try {
   };
 }
 
-// 選手のポジションをマッピング
+// 選手のポジションマッピング
 const POSITION_MAPPING = {
   Goalkeeper: "GK",
   "Centre-Back": "DF",
@@ -45,6 +45,14 @@ const POSITION_MAPPING = {
   "Centre-Forward": "FW",
 };
 
+// ポジション別の優先度設定（背番号ベース）
+const POSITION_PRIORITY = {
+  GK: [1, 12, 13, 21, 22, 23, 30, 31, 32, 33],
+  DF: [2, 3, 4, 5, 6, 14, 15, 16, 17, 18, 19, 20, 24, 25, 26, 27, 28, 29],
+  MF: [6, 7, 8, 10, 11, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24],
+  FW: [7, 9, 10, 11, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23],
+};
+
 async function fetchWithRetry(url, options, retries = API_CONFIG.MAX_RETRIES) {
   for (let i = 0; i < retries; i++) {
     try {
@@ -52,7 +60,6 @@ async function fetchWithRetry(url, options, retries = API_CONFIG.MAX_RETRIES) {
       if (response.ok) {
         return response;
       } else if (response.status === 429) {
-        // Rate limit - 設定された時間待機
         console.log(
           `Rate limit hit, waiting ${API_CONFIG.RATE_LIMIT_DELAY / 1000} seconds...`,
         );
@@ -90,13 +97,12 @@ async function loadTeamIds() {
     const teams = [];
 
     for (let i = 1; i < lines.length; i++) {
-      // ヘッダーをスキップ
       const columns = lines[i].split(",");
       if (columns.length >= 3) {
         teams.push({
-          id: columns[0],
-          name: columns[1].replace(/"/g, ""),
-          shortName: columns[2].replace(/"/g, ""),
+          id: columns[0].trim(),
+          name: columns[1].replace(/"/g, "").trim(),
+          shortName: columns[2].replace(/"/g, "").trim(),
         });
       }
     }
@@ -106,6 +112,38 @@ async function loadTeamIds() {
     console.error("チームデータの読み込みエラー:", error.message);
     return [];
   }
+}
+
+function calculatePlayerPriority(player, position) {
+  let priority = 1000; // デフォルト優先度（低い）
+
+  // 背番号による優先度
+  if (player.shirtNumber && POSITION_PRIORITY[position]) {
+    const positionIndex = POSITION_PRIORITY[position].indexOf(
+      player.shirtNumber,
+    );
+    if (positionIndex !== -1) {
+      priority = positionIndex; // 0が最高優先度
+    }
+  }
+
+  // APIのroleがあれば考慮
+  if (player.role === "CAPTAIN") {
+    priority -= 50; // キャプテンは優先度アップ
+  }
+
+  // 年齢による調整（25-30歳が主力と仮定）
+  if (player.dateOfBirth) {
+    const age =
+      new Date().getFullYear() - new Date(player.dateOfBirth).getFullYear();
+    if (age >= 25 && age <= 30) {
+      priority -= 10; // 主力年齢は優先度アップ
+    } else if (age > 35) {
+      priority += 20; // 高齢は優先度ダウン
+    }
+  }
+
+  return priority;
 }
 
 async function fetchPlayersForTeam(teamId, teamName) {
@@ -128,16 +166,25 @@ async function fetchPlayersForTeam(teamId, teamName) {
       return createFallbackPlayersForTeam(teamId, teamName);
     }
 
-    const players = teamData.squad.map((player) => ({
-      id: player.id,
-      name: player.name,
-      position: POSITION_MAPPING[player.position] || "MF",
-      shirtNumber: player.shirtNumber || null,
-      dateOfBirth: player.dateOfBirth || "",
-      nationality: player.nationality || "",
-      teamId: teamId,
-      teamName: teamName,
-    }));
+    // 選手データを処理して優先度を追加
+    const players = teamData.squad.map((player) => {
+      const position = POSITION_MAPPING[player.position] || "MF";
+      const priority = calculatePlayerPriority(player, position);
+
+      return {
+        id: player.id,
+        name: player.name,
+        position: position,
+        shirtNumber: player.shirtNumber || null,
+        dateOfBirth: player.dateOfBirth || "",
+        nationality: player.nationality || "",
+        teamId: teamId,
+        teamName: teamName,
+        priority: priority,
+        role: player.role || "",
+        originalPosition: player.position || "",
+      };
+    });
 
     console.log(`✅ ${teamName}: ${players.length}名の選手データを取得`);
     return players;
@@ -148,7 +195,6 @@ async function fetchPlayersForTeam(teamId, teamName) {
 }
 
 function createFallbackPlayersForTeam(teamId, teamName) {
-  // フォールバック用の一般的な選手データ
   const positions = [
     "GK",
     "DF",
@@ -174,6 +220,9 @@ function createFallbackPlayersForTeam(teamId, teamName) {
       nationality: "",
       teamId: teamId,
       teamName: teamName,
+      priority: i, // 順番通りの優先度
+      role: "",
+      originalPosition: positions[i],
     });
   }
 
@@ -211,12 +260,12 @@ async function fetchPlayerData() {
 
     const allPlayers = [];
 
-    // 各チームの選手データを取得（API制限を考慮して順次処理）
+    // 各チームの選手データを取得
     for (const team of teams) {
       const players = await fetchPlayersForTeam(team.id, team.shortName);
       allPlayers.push(...players);
 
-      // API制限対策：設定された時間待機
+      // API制限対策
       await new Promise((resolve) =>
         setTimeout(resolve, API_CONFIG.REQUEST_DELAY),
       );
@@ -234,6 +283,9 @@ async function fetchPlayerData() {
       "nationality",
       "teamId",
       "teamName",
+      "priority",
+      "role",
+      "originalPosition",
     ];
 
     let csvContent = csvHeaders.join(",") + "\n";
@@ -248,12 +300,19 @@ async function fetchPlayerData() {
         `"${player.nationality}"`,
         player.teamId,
         `"${player.teamName}"`,
+        player.priority,
+        `"${player.role}"`,
+        `"${player.originalPosition}"`,
       ];
       csvContent += row.join(",") + "\n";
     });
 
     // CSVファイルに保存
     const dataDir = path.join(__dirname, "..", "public", "data");
+    if (!fs.existsSync(dataDir)) {
+      fs.mkdirSync(dataDir, { recursive: true });
+    }
+
     const csvPath = path.join(dataDir, "premier_league_players.csv");
     fs.writeFileSync(csvPath, csvContent, "utf8");
 
@@ -261,13 +320,22 @@ async function fetchPlayerData() {
 
     // 統計表示
     const teamStats = {};
+    const positionStats = { GK: 0, DF: 0, MF: 0, FW: 0 };
+
     allPlayers.forEach((player) => {
       teamStats[player.teamName] = (teamStats[player.teamName] || 0) + 1;
+      positionStats[player.position] =
+        (positionStats[player.position] || 0) + 1;
     });
 
     console.log("\n📊 チーム別選手数:");
     Object.entries(teamStats).forEach(([team, count]) => {
       console.log(`${team}: ${count}名`);
+    });
+
+    console.log("\n📊 ポジション別選手数:");
+    Object.entries(positionStats).forEach(([position, count]) => {
+      console.log(`${position}: ${count}名`);
     });
   } catch (error) {
     console.error("❌ エラーが発生しました:", error.message);
@@ -277,7 +345,6 @@ async function fetchPlayerData() {
 }
 
 async function createFullFallbackData() {
-  // チーム情報を読み込み
   const teams = await loadTeamIds();
   if (teams.length === 0) {
     console.error("❌ チームデータが見つかりません");
@@ -286,7 +353,6 @@ async function createFullFallbackData() {
 
   const allPlayers = [];
 
-  // 各チームのフォールバック選手データを作成
   teams.forEach((team) => {
     const players = createFallbackPlayersForTeam(team.id, team.shortName);
     allPlayers.push(...players);
@@ -302,6 +368,9 @@ async function createFullFallbackData() {
     "nationality",
     "teamId",
     "teamName",
+    "priority",
+    "role",
+    "originalPosition",
   ];
 
   let csvContent = csvHeaders.join(",") + "\n";
@@ -316,11 +385,13 @@ async function createFullFallbackData() {
       `"${player.nationality}"`,
       player.teamId,
       `"${player.teamName}"`,
+      player.priority,
+      `"${player.role}"`,
+      `"${player.originalPosition}"`,
     ];
     csvContent += row.join(",") + "\n";
   });
 
-  // CSVファイルに保存
   const dataDir = path.join(__dirname, "..", "public", "data");
   if (!fs.existsSync(dataDir)) {
     fs.mkdirSync(dataDir, { recursive: true });
@@ -334,4 +405,4 @@ async function createFullFallbackData() {
 }
 
 // 実行
-fetchPlayerData(); // 選手データ取得スクリプト
+fetchPlayerData();
