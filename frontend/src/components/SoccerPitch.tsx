@@ -22,7 +22,17 @@ const SoccerPitch: React.FC<SoccerPitchProps> = ({
 }) => {
   return (
     <div className="soccer-pitch">
-      <svg width="800" height="600" viewBox="0 0 800 600">
+      <svg
+        width="100%"
+        height="100%"
+        viewBox="0 0 800 600"
+        preserveAspectRatio="xMidYMid meet"
+        style={{
+          maxHeight: "70vh",
+          minHeight: "400px",
+          display: "block",
+        }}
+      >
         {/* ピッチの背景 */}
         <rect width="800" height="600" fill="#2e7d32" />
 

@@ -21,10 +21,23 @@ const Player: React.FC<PlayerProps> = ({
 
     const handleMouseMove = (moveEvent: MouseEvent) => {
       const rect = svg.getBoundingClientRect();
-      const newX = moveEvent.clientX - rect.left;
-      const newY = moveEvent.clientY - rect.top;
 
-      // ピッチ内に制限
+      // SVGのviewBoxサイズ（800x600）
+      const viewBoxWidth = 800;
+      const viewBoxHeight = 600;
+
+      // 実際のSVGサイズ
+      const svgWidth = rect.width;
+      const svgHeight = rect.height;
+
+      // マウス座標をviewBox座標系に変換
+      const scaleX = viewBoxWidth / svgWidth;
+      const scaleY = viewBoxHeight / svgHeight;
+
+      const newX = (moveEvent.clientX - rect.left) * scaleX;
+      const newY = (moveEvent.clientY - rect.top) * scaleY;
+
+      // ピッチ内に制限（viewBox座標系で）
       const boundedX = Math.max(20, Math.min(780, newX));
       const boundedY = Math.max(20, Math.min(580, newY));
 
