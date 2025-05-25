@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import SoccerPitch from "./components/SoccerPitch";
 import CustomFormationModal from "./components/CustomFormationModal";
 import TeamBlock from "./components/TeamBlock";
@@ -11,6 +11,7 @@ const App: React.FC = () => {
   const matchManager = useMatchManager();
   const formationManager = useFormationManager();
   const playerManager = usePlayerManager();
+  const [showDataModal, setShowDataModal] = useState(false);
 
   const dataManager = useDataManager({
     homeTeam: matchManager.homeTeam,
@@ -43,7 +44,7 @@ const App: React.FC = () => {
           <div className="card">
             <div className="card-body">
               <div className="row align-items-center">
-                <div className="col-md-6">
+                <div className="col-md-4">
                   <div className="btn-group w-100" role="group">
                     <input
                       type="radio"
@@ -77,25 +78,35 @@ const App: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="col-md-6">
+                <div className="col-md-4">
+                  <button
+                    className="btn btn-outline-secondary w-100"
+                    onClick={matchManager.swapTeams}
+                  >
+                    🔄 チーム入れ替え
+                  </button>
+                </div>
+
+                <div className="col-md-4">
                   <div className="d-flex gap-2">
                     <button
-                      className="btn btn-outline-secondary flex-fill"
-                      onClick={matchManager.swapTeams}
-                    >
-                      🔄 チーム入れ替え
-                    </button>
-                    <button
-                      className="btn btn-success"
+                      className="btn btn-success flex-fill"
                       onClick={dataManager.saveToLocalStorage}
                     >
                       💾 保存
                     </button>
                     <button
-                      className="btn btn-info"
+                      className="btn btn-info flex-fill"
                       onClick={dataManager.loadFromLocalStorage}
+                      disabled={!dataManager.hasSavedData}
                     >
                       📁 読み込み
+                    </button>
+                    <button
+                      className="btn btn-outline-secondary"
+                      onClick={() => setShowDataModal(true)}
+                    >
+                      ⚙️
                     </button>
                   </div>
                 </div>
@@ -308,6 +319,136 @@ const App: React.FC = () => {
         </div>
       </div>
 
+      {/* データ管理モーダル */}
+      {showDataModal && (
+        <div
+          className="modal d-block"
+          style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
+        >
+          <div className="modal-dialog modal-dialog-centered">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title">💾 データ管理</h5>
+                <button
+                  type="button"
+                  className="btn-close"
+                  onClick={() => setShowDataModal(false)}
+                ></button>
+              </div>
+
+              <div className="modal-body">
+                <div className="row g-3">
+                  {/* メモリ操作 */}
+                  <div className="col-12">
+                    <h6 className="text-primary">📄 メモリ保存</h6>
+                    <div className="d-grid gap-2">
+                      <button
+                        className="btn btn-success"
+                        onClick={() => {
+                          dataManager.saveToLocalStorage();
+                          setShowDataModal(false);
+                        }}
+                      >
+                        💾 現在の状態を保存
+                      </button>
+                      <button
+                        className="btn btn-info"
+                        onClick={() => {
+                          dataManager.loadFromLocalStorage();
+                          setShowDataModal(false);
+                        }}
+                        disabled={!dataManager.hasSavedData}
+                      >
+                        📁 保存した状態を読み込み
+                      </button>
+                      <button
+                        className="btn btn-outline-secondary"
+                        onClick={dataManager.createSnapshot}
+                      >
+                        📸 スナップショット作成
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* ファイル操作 */}
+                  <div className="col-12">
+                    <h6 className="text-success">💿 ファイル操作</h6>
+                    <div className="d-grid gap-2">
+                      <button
+                        className="btn btn-outline-success"
+                        onClick={dataManager.exportData}
+                      >
+                        📤 JSONファイルにエクスポート
+                      </button>
+                      <button
+                        className="btn btn-outline-info"
+                        onClick={dataManager.importData}
+                      >
+                        📥 JSONファイルからインポート
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* 履歴 */}
+                  {dataManager.saveHistory.length > 0 && (
+                    <div className="col-12">
+                      <h6 className="text-warning">📚 保存履歴</h6>
+                      <div className="list-group">
+                        {dataManager.saveHistory
+                          .slice(0, 5)
+                          .map((data, index) => (
+                            <button
+                              key={index}
+                              className="list-group-item list-group-item-action"
+                              onClick={() => {
+                                dataManager.loadFromHistory(data);
+                                setShowDataModal(false);
+                              }}
+                            >
+                              <div className="d-flex justify-content-between">
+                                <span>
+                                  {data.homeTeam.name} vs {data.awayTeam.name}
+                                </span>
+                                <small className="text-muted">
+                                  {new Date(data.timestamp).toLocaleString()}
+                                </small>
+                              </div>
+                            </button>
+                          ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* 危険な操作 */}
+                  <div className="col-12">
+                    <h6 className="text-danger">⚠️ 危険な操作</h6>
+                    <button
+                      className="btn btn-outline-danger w-100"
+                      onClick={() => {
+                        dataManager.resetData();
+                        setShowDataModal(false);
+                      }}
+                    >
+                      🗑️ 全データをリセット
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <div className="modal-footer">
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  onClick={() => setShowDataModal(false)}
+                >
+                  閉じる
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* カスタムフォーメーション作成モーダル */}
       <CustomFormationModal
         show={formationManager.showCustomModal}
@@ -319,6 +460,15 @@ const App: React.FC = () => {
           matchManager.awayTeam,
         )}
         team={formationManager.modalTeam}
+      />
+
+      {/* 隠しファイル入力 */}
+      <input
+        type="file"
+        ref={dataManager.fileInputRef}
+        onChange={dataManager.handleFileSelect}
+        accept=".json"
+        style={{ display: "none" }}
       />
     </div>
   );

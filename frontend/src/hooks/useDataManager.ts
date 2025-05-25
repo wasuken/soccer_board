@@ -1,3 +1,4 @@
+import { useState, useRef } from "react";
 import { Team, Formation } from "../types";
 import { TeamData } from "../components/TeamSelector";
 import { PRESET_FORMATIONS } from "../data/formations";
@@ -53,8 +54,13 @@ export const useDataManager = (params: DataManagerParams) => {
     setSelectedAwayTeamData,
   } = params;
 
-  // データの保存
-  const saveToLocalStorage = () => {
+  // メモリ内でのデータ保存状態
+  const [savedData, setSavedData] = useState<SaveData | null>(null);
+  const [saveHistory, setSaveHistory] = useState<SaveData[]>([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // データの保存（メモリ内）
+  const saveToMemory = () => {
     try {
       const data: SaveData = {
         homeTeam,
@@ -68,26 +74,47 @@ export const useDataManager = (params: DataManagerParams) => {
         timestamp: new Date().toISOString(),
       };
 
-      localStorage.setItem("soccerTacticalBoard", JSON.stringify(data));
-      alert("データを保存しました");
+      setSavedData(data);
+      setSaveHistory((prev) => [data, ...prev.slice(0, 4)]); // 最新5件まで保持
+      alert("データをメモリに保存しました");
     } catch (error) {
       console.error("保存エラー:", error);
       alert("データの保存に失敗しました");
     }
   };
 
-  // データの読み込み
-  const loadFromLocalStorage = () => {
+  // データの読み込み（メモリから）
+  const loadFromMemory = () => {
     try {
-      const saved = localStorage.getItem("soccerTacticalBoard");
-      if (!saved) {
+      if (!savedData) {
         alert("保存されたデータがありません");
         return;
       }
 
-      const data: SaveData = JSON.parse(saved);
-
       // データの復元
+      setHomeTeam(savedData.homeTeam);
+      setAwayTeam(savedData.awayTeam);
+      setDisplayMode(savedData.displayMode || "number");
+      setCustomFormations(savedData.customFormations || []);
+      setHomeSelectedFormation(
+        savedData.homeSelectedFormation || PRESET_FORMATIONS[0].id,
+      );
+      setAwaySelectedFormation(
+        savedData.awaySelectedFormation || PRESET_FORMATIONS[0].id,
+      );
+      setSelectedHomeTeamData(savedData.selectedHomeTeamData || null);
+      setSelectedAwayTeamData(savedData.selectedAwayTeamData || null);
+
+      alert("データを読み込みました");
+    } catch (error) {
+      console.error("読み込みエラー:", error);
+      alert("データの読み込みに失敗しました");
+    }
+  };
+
+  // 履歴から読み込み
+  const loadFromHistory = (data: SaveData) => {
+    try {
       setHomeTeam(data.homeTeam);
       setAwayTeam(data.awayTeam);
       setDisplayMode(data.displayMode || "number");
@@ -101,10 +128,10 @@ export const useDataManager = (params: DataManagerParams) => {
       setSelectedHomeTeamData(data.selectedHomeTeamData || null);
       setSelectedAwayTeamData(data.selectedAwayTeamData || null);
 
-      alert("データを読み込みました");
+      alert("履歴データを読み込みました");
     } catch (error) {
-      console.error("読み込みエラー:", error);
-      alert("データの読み込みに失敗しました");
+      console.error("履歴読み込みエラー:", error);
+      alert("履歴データの読み込みに失敗しました");
     }
   };
 
@@ -113,14 +140,14 @@ export const useDataManager = (params: DataManagerParams) => {
     if (
       confirm("すべてのデータをリセットしますか？この操作は取り消せません。")
     ) {
-      localStorage.removeItem("soccerTacticalBoard");
-      // 初期状態への復元は呼び出し元で行う
+      setSavedData(null);
+      setSaveHistory([]);
       alert("データをリセットしました。ページを再読み込みしてください。");
       window.location.reload();
     }
   };
 
-  // データのエクスポート
+  // データのエクスポート（JSONファイルとしてダウンロード）
   const exportData = () => {
     try {
       const data: SaveData = {
@@ -145,14 +172,25 @@ export const useDataManager = (params: DataManagerParams) => {
       link.click();
 
       URL.revokeObjectURL(url);
+      alert("データをJSONファイルとしてダウンロードしました");
     } catch (error) {
       console.error("エクスポートエラー:", error);
       alert("データのエクスポートに失敗しました");
     }
   };
 
-  // データのインポート
-  const importData = (file: File) => {
+  // データのインポート（JSONファイルから）
+  const importData = () => {
+    // ファイル選択ダイアログを開く
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
+    }
+  };
+
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
     const reader = new FileReader();
     reader.onload = (e) => {
       try {
@@ -181,13 +219,48 @@ export const useDataManager = (params: DataManagerParams) => {
       }
     };
     reader.readAsText(file);
+
+    // ファイル入力をリセット
+    event.target.value = "";
+  };
+
+  // クイックスナップショット（現在の状態を一時保存）
+  const createSnapshot = () => {
+    const data: SaveData = {
+      homeTeam,
+      awayTeam,
+      displayMode,
+      customFormations,
+      homeSelectedFormation,
+      awaySelectedFormation,
+      selectedHomeTeamData,
+      selectedAwayTeamData,
+      timestamp: new Date().toISOString(),
+    };
+
+    setSaveHistory((prev) => [data, ...prev.slice(0, 9)]); // 最新10件まで保持
+    alert("スナップショットを作成しました");
   };
 
   return {
-    saveToLocalStorage,
-    loadFromLocalStorage,
+    // メモリベースの保存・読み込み
+    saveToLocalStorage: saveToMemory,
+    loadFromLocalStorage: loadFromMemory,
+
+    // 新機能
     resetData,
     exportData,
     importData,
+    createSnapshot,
+    loadFromHistory,
+
+    // 状態
+    savedData,
+    saveHistory,
+    hasSavedData: savedData !== null,
+
+    // ファイル入力用のref
+    fileInputRef,
+    handleFileSelect,
   };
 };
