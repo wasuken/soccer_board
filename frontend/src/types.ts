@@ -5,7 +5,7 @@ export interface Position {
 
 export type PlayerPosition = "GK" | "DF" | "MF" | "FW";
 
-export interface Player {
+export interface PlayerCoordinate {
   id: string;
   x: number;
   y: number;

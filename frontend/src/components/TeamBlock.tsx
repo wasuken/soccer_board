@@ -4,7 +4,7 @@ import PlayerList from "./PlayerList";
 import AutoNumbering from "./AutoNumbering";
 import TeamSelector from "./TeamSelector";
 import PlayerLoader from "./PlayerLoader";
-import { Team, Formation } from "../types";
+import { Team, Formation, Player } from "../types";
 import { TeamData } from "./TeamSelector";
 
 interface TeamBlockProps {
@@ -14,13 +14,13 @@ interface TeamBlockProps {
   selectedFormation: string;
   allFormations: Formation[];
   onTeamSelect: (teamData: TeamData | null) => void;
-  onPlayersLoaded: (players: any[]) => void;
+  onPlayersLoaded: (players: Player[]) => void;
   onFormationChange: (formationId: string) => void;
   onCreateCustom: () => void;
   onDeleteCustom: (formationId: string) => void;
   onPhaseChange: (phase: "basic" | "attack" | "defense") => void;
   onTeamNameChange: (name: string) => void;
-  onPlayerUpdate: (playerId: string, updates: any) => void;
+  onPlayerUpdate: (playerId: string, updates: Partial<Player>) => void;
   onPlayerFocus: (playerId: string) => void;
   onAutoNumbering: (updates: Array<{ id: string; number: number }>) => void;
 }

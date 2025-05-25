@@ -1,8 +1,8 @@
 import React from "react";
-import { Player as PlayerType } from "../types";
+import { PlayerCoordinate } from "../types";
 
 interface PlayerProps {
-  player: PlayerType;
+  player: PlayerCoordinate;
   onDrag: (playerId: string, newPosition: { x: number; y: number }) => void;
   displayMode: "number" | "initial";
   isHighlighted?: boolean;
