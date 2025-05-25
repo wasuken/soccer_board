@@ -20,8 +20,8 @@ export const useFormationManager = () => {
   const handleFormationChange = (
     team: "home" | "away",
     formationId: string,
-    homeTeam: Team,
-    awayTeam: Team,
+    _homeTeam: Team,
+    _awayTeam: Team,
     setHomeTeam: (team: Team | ((prev: Team) => Team)) => void,
     setAwayTeam: (team: Team | ((prev: Team) => Team)) => void,
   ) => {

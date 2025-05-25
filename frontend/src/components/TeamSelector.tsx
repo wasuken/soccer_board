@@ -76,7 +76,7 @@ const TeamSelector: React.FC<TeamSelectorProps> = ({
           setTeams(validTeams);
           console.log(`✅ ${validTeams.length}チームのデータを読み込みました`);
         },
-        error: (error) => {
+        error: (error: Error) => {
           throw new Error(`CSV解析エラー: ${error.message}`);
         },
       });

@@ -1,10 +1,10 @@
 import React from "react";
 import Player from "./Player";
-import { PlayerCoordinate } from "../types";
+import { Player as PlayerType } from "../types";
 
 interface SoccerPitchProps {
-  homePlayers: PlayerCoordinate[];
-  awayPlayers: PlayerCoordinate[];
+  homePlayers: PlayerType[];
+  awayPlayers: PlayerType[];
   onPlayerDrag: (
     playerId: string,
     newPosition: { x: number; y: number },

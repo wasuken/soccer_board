@@ -85,7 +85,7 @@ const PlayerLoader: React.FC<PlayerLoaderProps> = ({
             `✅ ${validPlayers.length}名の選手データを読み込みました`,
           );
         },
-        error: (error) => {
+        error: (error: Error) => {
           throw new Error(`選手CSV解析エラー: ${error.message}`);
         },
       });

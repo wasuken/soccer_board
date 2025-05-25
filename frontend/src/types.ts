@@ -11,8 +11,6 @@ export interface PlayerCoordinate {
   y: number;
 }
 
-export type PlayerPosition = "GK" | "DF" | "MF" | "FW";
-
 export interface Player {
   id: string;
   name: string;
