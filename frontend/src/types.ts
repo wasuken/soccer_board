@@ -3,15 +3,15 @@ export interface Position {
   y: number;
 }
 
-export type PlayerPosition = 'GK' | 'DF' | 'MF' | 'FW';
+export type PlayerPosition = "GK" | "DF" | "MF" | "FW";
 
 export interface Player {
-  id: stringexport interface Position {
+  id: string;
   x: number;
   y: number;
 }
 
-export type PlayerPosition = 'GK' | 'DF' | 'MF' | 'FW';
+export type PlayerPosition = "GK" | "DF" | "MF" | "FW";
 
 export interface Player {
   id: string;
@@ -19,7 +19,7 @@ export interface Player {
   number: number;
   position: Position;
   playerPosition: PlayerPosition;
-  team: 'home' | 'away';
+  team: "home" | "away";
 }
 
 export interface Formation {
@@ -41,7 +41,7 @@ export interface Team {
   players: Player[];
   formations: { [key: string]: FormationSet };
   currentFormation: string;
-  currentPhase: 'basic' | 'attack' | 'defense';
+  currentPhase: "basic" | "attack" | "defense";
 }
 
 export interface Match {
