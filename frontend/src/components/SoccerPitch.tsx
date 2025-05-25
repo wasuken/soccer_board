@@ -9,7 +9,6 @@ interface SoccerPitchProps {
     playerId: string,
     newPosition: { x: number; y: number },
   ) => void;
-  displayMode: "number" | "initial";
   highlightedPlayer?: string;
 }
 
@@ -17,7 +16,6 @@ const SoccerPitch: React.FC<SoccerPitchProps> = ({
   homePlayers,
   awayPlayers,
   onPlayerDrag,
-  displayMode,
   highlightedPlayer,
 }) => {
   return (
@@ -25,23 +23,23 @@ const SoccerPitch: React.FC<SoccerPitchProps> = ({
       <svg
         width="100%"
         height="100%"
-        viewBox="0 0 800 600"
+        viewBox="0 0 800 800"
         preserveAspectRatio="xMidYMid meet"
         style={{
-          maxHeight: "70vh",
-          minHeight: "400px",
+          maxHeight: "80vh",
+          minHeight: "500px",
           display: "block",
         }}
       >
         {/* ピッチの背景 */}
-        <rect width="800" height="600" fill="#2e7d32" />
+        <rect width="800" height="800" fill="#2e7d32" />
 
         {/* 外側のライン */}
         <rect
           x="20"
           y="20"
           width="760"
-          height="560"
+          height="760"
           fill="none"
           stroke="white"
           strokeWidth="3"
@@ -50,17 +48,17 @@ const SoccerPitch: React.FC<SoccerPitchProps> = ({
         {/* センターライン */}
         <line
           x1="20"
-          y1="300"
+          y1="400"
           x2="780"
-          y2="300"
+          y2="400"
           stroke="white"
-          strokeWidth="2"
+          strokeWidth="3"
         />
 
         {/* センターサークル */}
         <circle
           cx="400"
-          cy="300"
+          cy="400"
           r="80"
           fill="none"
           stroke="white"
@@ -68,9 +66,9 @@ const SoccerPitch: React.FC<SoccerPitchProps> = ({
         />
 
         {/* センタースポット */}
-        <circle cx="400" cy="300" r="3" fill="white" />
+        <circle cx="400" cy="400" r="3" fill="white" />
 
-        {/* 上のゴールエリア（相手側） */}
+        {/* 上のゴールエリア（アウェイ側） */}
         <rect
           x="320"
           y="20"
@@ -106,10 +104,10 @@ const SoccerPitch: React.FC<SoccerPitchProps> = ({
           strokeWidth="3"
         />
 
-        {/* 下のゴールエリア（自陣側） */}
+        {/* 下のゴールエリア（ホーム側） */}
         <rect
           x="320"
-          y="520"
+          y="720"
           width="160"
           height="60"
           fill="none"
@@ -120,7 +118,7 @@ const SoccerPitch: React.FC<SoccerPitchProps> = ({
         {/* 下のペナルティエリア */}
         <rect
           x="250"
-          y="430"
+          y="630"
           width="300"
           height="150"
           fill="none"
@@ -129,12 +127,12 @@ const SoccerPitch: React.FC<SoccerPitchProps> = ({
         />
 
         {/* 下のペナルティスポット */}
-        <circle cx="400" cy="470" r="3" fill="white" />
+        <circle cx="400" cy="670" r="3" fill="white" />
 
         {/* 下のゴール */}
         <rect
           x="370"
-          y="575"
+          y="775"
           width="60"
           height="10"
           fill="none"
@@ -152,7 +150,7 @@ const SoccerPitch: React.FC<SoccerPitchProps> = ({
 
         {/* ペナルティアーク（下） */}
         <path
-          d="M 320 430 A 80 80 0 0 0 480 430"
+          d="M 320 630 A 80 80 0 0 0 480 630"
           fill="none"
           stroke="white"
           strokeWidth="2"
@@ -172,13 +170,13 @@ const SoccerPitch: React.FC<SoccerPitchProps> = ({
           strokeWidth="2"
         />
         <path
-          d="M 35 580 A 15 15 0 0 1 20 565"
+          d="M 35 780 A 15 15 0 0 1 20 765"
           fill="none"
           stroke="white"
           strokeWidth="2"
         />
         <path
-          d="M 765 580 A 15 15 0 0 0 780 565"
+          d="M 765 780 A 15 15 0 0 0 780 765"
           fill="none"
           stroke="white"
           strokeWidth="2"
@@ -188,20 +186,20 @@ const SoccerPitch: React.FC<SoccerPitchProps> = ({
         <g>
           {/* 上側（アウェイ陣地） */}
           <rect
-            x="350"
-            y="40"
-            width="100"
-            height="25"
+            x="330"
+            y="50"
+            width="140"
+            height="30"
             fill="rgba(220, 53, 69, 0.8)"
-            rx="12"
+            rx="15"
           />
           <text
             x="400"
-            y="57"
+            y="70"
             className="goal-label"
             fill="white"
             textAnchor="middle"
-            fontSize="14"
+            fontSize="16"
             fontWeight="bold"
           >
             AWAY GOAL
@@ -209,20 +207,20 @@ const SoccerPitch: React.FC<SoccerPitchProps> = ({
 
           {/* 下側（ホーム陣地） */}
           <rect
-            x="350"
-            y="535"
-            width="100"
-            height="25"
+            x="330"
+            y="720"
+            width="140"
+            height="30"
             fill="rgba(0, 123, 255, 0.8)"
-            rx="12"
+            rx="15"
           />
           <text
             x="400"
-            y="552"
+            y="740"
             className="goal-label"
             fill="white"
             textAnchor="middle"
-            fontSize="14"
+            fontSize="16"
             fontWeight="bold"
           >
             HOME GOAL
@@ -233,18 +231,76 @@ const SoccerPitch: React.FC<SoccerPitchProps> = ({
         <g>
           {/* 左サイド - ホームからアウェイ方向 */}
           <path
-            d="M 10 520 L 10 80"
+            d="M 10 720 L 10 80"
             stroke="rgba(0, 123, 255, 0.6)"
-            strokeWidth="4"
+            strokeWidth="5"
             markerEnd="url(#arrowhead-blue)"
           />
 
           {/* 右サイド - アウェイからホーム方向 */}
           <path
-            d="M 790 80 L 790 520"
+            d="M 790 80 L 790 720"
             stroke="rgba(220, 53, 69, 0.6)"
-            strokeWidth="4"
+            strokeWidth="5"
             markerEnd="url(#arrowhead-red)"
+          />
+        </g>
+
+        {/* ハーフライン境界の視覚的ヒント */}
+        <g opacity="0.3">
+          {/* ホーム側制限エリア表示 */}
+          <rect
+            x="20"
+            y="420"
+            width="760"
+            height="360"
+            fill="rgba(0, 123, 255, 0.1)"
+            stroke="rgba(0, 123, 255, 0.3)"
+            strokeWidth="2"
+            strokeDasharray="10,5"
+          />
+          <text
+            x="400"
+            y="600"
+            textAnchor="middle"
+            fontSize="24"
+            fill="rgba(0, 123, 255, 0.5)"
+            fontWeight="bold"
+          >
+            HOME AREA
+          </text>
+
+          {/* アウェイ側制限エリア表示 */}
+          <rect
+            x="20"
+            y="20"
+            width="760"
+            height="360"
+            fill="rgba(220, 53, 69, 0.1)"
+            stroke="rgba(220, 53, 69, 0.3)"
+            strokeWidth="2"
+            strokeDasharray="10,5"
+          />
+          <text
+            x="400"
+            y="200"
+            textAnchor="middle"
+            fontSize="24"
+            fill="rgba(220, 53, 69, 0.5)"
+            fontWeight="bold"
+          >
+            AWAY AREA
+          </text>
+
+          {/* センターライン強調 */}
+          <line
+            x1="20"
+            y1="400"
+            x2="780"
+            y2="400"
+            stroke="rgba(255, 255, 255, 0.8)"
+            strokeWidth="2"
+            strokeDasharray="5,5"
           />
         </g>
 
@@ -252,23 +308,23 @@ const SoccerPitch: React.FC<SoccerPitchProps> = ({
         <defs>
           <marker
             id="arrowhead-blue"
-            markerWidth="10"
-            markerHeight="7"
-            refX="9"
-            refY="3.5"
+            markerWidth="12"
+            markerHeight="9"
+            refX="11"
+            refY="4.5"
             orient="auto"
           >
-            <polygon points="0 0, 10 3.5, 0 7" fill="rgba(0, 123, 255, 0.8)" />
+            <polygon points="0 0, 12 4.5, 0 9" fill="rgba(0, 123, 255, 0.8)" />
           </marker>
           <marker
             id="arrowhead-red"
-            markerWidth="10"
-            markerHeight="7"
-            refX="9"
-            refY="3.5"
+            markerWidth="12"
+            markerHeight="9"
+            refX="11"
+            refY="4.5"
             orient="auto"
           >
-            <polygon points="0 0, 10 3.5, 0 7" fill="rgba(220, 53, 69, 0.8)" />
+            <polygon points="0 0, 12 4.5, 0 9" fill="rgba(220, 53, 69, 0.8)" />
           </marker>
         </defs>
 
@@ -278,7 +334,6 @@ const SoccerPitch: React.FC<SoccerPitchProps> = ({
             key={player.id}
             player={player}
             onDrag={onPlayerDrag}
-            displayMode={displayMode}
             isHighlighted={highlightedPlayer === player.id}
           />
         ))}
@@ -288,7 +343,6 @@ const SoccerPitch: React.FC<SoccerPitchProps> = ({
             key={player.id}
             player={player}
             onDrag={onPlayerDrag}
-            displayMode={displayMode}
             isHighlighted={highlightedPlayer === player.id}
           />
         ))}

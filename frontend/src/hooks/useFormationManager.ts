@@ -48,7 +48,7 @@ export const useFormationManager = () => {
           position: formation.positions[index]
             ? {
                 x: formation.positions[index].x,
-                y: 600 - formation.positions[index].y,
+                y: 800 - formation.positions[index].y,
               }
             : player.position,
         })),

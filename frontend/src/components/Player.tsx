@@ -4,14 +4,12 @@ import { Player as PlayerType } from "../types";
 interface PlayerProps {
   player: PlayerType;
   onDrag: (playerId: string, newPosition: { x: number; y: number }) => void;
-  displayMode: "number" | "initial";
   isHighlighted?: boolean;
 }
 
 const Player: React.FC<PlayerProps> = ({
   player,
   onDrag,
-  displayMode,
   isHighlighted = false,
 }) => {
   const handleMouseDown = (e: React.MouseEvent) => {
@@ -22,9 +20,9 @@ const Player: React.FC<PlayerProps> = ({
     const handleMouseMove = (moveEvent: MouseEvent) => {
       const rect = svg.getBoundingClientRect();
 
-      // SVGのviewBoxサイズ（800x600）
+      // SVGのviewBoxサイズ（800x800）
       const viewBoxWidth = 800;
-      const viewBoxHeight = 600;
+      const viewBoxHeight = 800;
 
       // 実際のSVGサイズ
       const svgWidth = rect.width;
@@ -38,8 +36,17 @@ const Player: React.FC<PlayerProps> = ({
       const newY = (moveEvent.clientY - rect.top) * scaleY;
 
       // ピッチ内に制限（viewBox座標系で）
-      const boundedX = Math.max(20, Math.min(780, newX));
-      const boundedY = Math.max(20, Math.min(580, newY));
+      const boundedX = Math.max(25, Math.min(775, newX));
+      let boundedY = Math.max(25, Math.min(775, newY));
+
+      // ハーフライン制限を緩和（もう少し相手陣営に入れるように）
+      if (player.team === "home") {
+        // ホームチーム: Y座標420-775（センターラインを少し超えられる）
+        boundedY = Math.max(420, Math.min(775, boundedY));
+      } else {
+        // アウェイチーム: Y座標25-380（センターラインを少し超えられる）
+        boundedY = Math.max(25, Math.min(380, boundedY));
+      }
 
       onDrag(player.id, { x: boundedX, y: boundedY });
     };
@@ -53,13 +60,12 @@ const Player: React.FC<PlayerProps> = ({
     document.addEventListener("mouseup", handleMouseUp);
   };
 
-  const getDisplayText = () => {
-    if (displayMode === "number") {
-      return player.number.toString();
-    } else {
-      // イニシャル表示（名前の最初の文字）
-      return player.name.charAt(0).toUpperCase();
+  // 名前を短縮表示（長すぎる場合）
+  const getDisplayName = () => {
+    if (player.name.length > 8) {
+      return player.name.substring(0, 7) + "...";
     }
+    return player.name;
   };
 
   return (
@@ -71,7 +77,7 @@ const Player: React.FC<PlayerProps> = ({
       {/* ハイライト表示用の外側円 */}
       {isHighlighted && (
         <circle
-          r="26"
+          r="30"
           fill="none"
           stroke="#ffc107"
           strokeWidth="3"
@@ -86,14 +92,32 @@ const Player: React.FC<PlayerProps> = ({
         </circle>
       )}
 
+      {/* プレイヤーの円 */}
       <circle
-        r="20"
+        r="22"
         className={player.team === "home" ? "player-home" : "player-away"}
       />
-      {/* 白い背景円で文字をくっきり見せる */}
-      <circle r="12" fill="#ffffff" fillOpacity="0.9" />
+
+      {/* 背番号用の白い背景円 */}
+      <circle r="14" fill="#ffffff" fillOpacity="0.9" />
+
+      {/* 背番号 */}
       <text className="player-number" dy="1" fill="#000000">
-        {getDisplayText()}
+        {player.number}
+      </text>
+
+      {/* プレイヤー名（円の下に表示） */}
+      <text
+        className="player-name"
+        y="40"
+        fill="white"
+        textAnchor="middle"
+        fontSize="12"
+        fontWeight="bold"
+        stroke="rgba(0,0,0,0.8)"
+        strokeWidth="0.5"
+      >
+        {getDisplayName()}
       </text>
     </g>
   );

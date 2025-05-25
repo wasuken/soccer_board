@@ -6,7 +6,6 @@ import { PRESET_FORMATIONS } from "../data/formations";
 interface SaveData {
   homeTeam: Team;
   awayTeam: Team;
-  displayMode: "number" | "initial";
   customFormations: Formation[];
   homeSelectedFormation: string;
   awaySelectedFormation: string;
@@ -18,7 +17,6 @@ interface SaveData {
 interface DataManagerParams {
   homeTeam: Team;
   awayTeam: Team;
-  displayMode: "number" | "initial";
   customFormations: Formation[];
   homeSelectedFormation: string;
   awaySelectedFormation: string;
@@ -26,7 +24,6 @@ interface DataManagerParams {
   selectedAwayTeamData: TeamData | null;
   setHomeTeam: (team: Team) => void;
   setAwayTeam: (team: Team) => void;
-  setDisplayMode: (mode: "number" | "initial") => void;
   setCustomFormations: (formations: Formation[]) => void;
   setHomeSelectedFormation: (id: string) => void;
   setAwaySelectedFormation: (id: string) => void;
@@ -38,7 +35,6 @@ export const useDataManager = (params: DataManagerParams) => {
   const {
     homeTeam,
     awayTeam,
-    displayMode,
     customFormations,
     homeSelectedFormation,
     awaySelectedFormation,
@@ -46,7 +42,6 @@ export const useDataManager = (params: DataManagerParams) => {
     selectedAwayTeamData,
     setHomeTeam,
     setAwayTeam,
-    setDisplayMode,
     setCustomFormations,
     setHomeSelectedFormation,
     setAwaySelectedFormation,
@@ -65,7 +60,6 @@ export const useDataManager = (params: DataManagerParams) => {
       const data: SaveData = {
         homeTeam,
         awayTeam,
-        displayMode,
         customFormations,
         homeSelectedFormation,
         awaySelectedFormation,
@@ -94,7 +88,6 @@ export const useDataManager = (params: DataManagerParams) => {
       // データの復元
       setHomeTeam(savedData.homeTeam);
       setAwayTeam(savedData.awayTeam);
-      setDisplayMode(savedData.displayMode || "number");
       setCustomFormations(savedData.customFormations || []);
       setHomeSelectedFormation(
         savedData.homeSelectedFormation || PRESET_FORMATIONS[0].id,
@@ -117,7 +110,6 @@ export const useDataManager = (params: DataManagerParams) => {
     try {
       setHomeTeam(data.homeTeam);
       setAwayTeam(data.awayTeam);
-      setDisplayMode(data.displayMode || "number");
       setCustomFormations(data.customFormations || []);
       setHomeSelectedFormation(
         data.homeSelectedFormation || PRESET_FORMATIONS[0].id,
@@ -153,7 +145,6 @@ export const useDataManager = (params: DataManagerParams) => {
       const data: SaveData = {
         homeTeam,
         awayTeam,
-        displayMode,
         customFormations,
         homeSelectedFormation,
         awaySelectedFormation,
@@ -199,7 +190,6 @@ export const useDataManager = (params: DataManagerParams) => {
         // データの復元
         setHomeTeam(data.homeTeam);
         setAwayTeam(data.awayTeam);
-        setDisplayMode(data.displayMode || "number");
         setCustomFormations(data.customFormations || []);
         setHomeSelectedFormation(
           data.homeSelectedFormation || PRESET_FORMATIONS[0].id,
@@ -229,7 +219,6 @@ export const useDataManager = (params: DataManagerParams) => {
     const data: SaveData = {
       homeTeam,
       awayTeam,
-      displayMode,
       customFormations,
       homeSelectedFormation,
       awaySelectedFormation,

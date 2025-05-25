@@ -4,15 +4,12 @@ import { TeamData } from "../components/TeamSelector";
 import { PRESET_FORMATIONS } from "../data/formations";
 
 export const useMatchManager = () => {
-  const [displayMode, setDisplayMode] = useState<"number" | "initial">(
-    "number",
-  );
   const [selectedHomeTeamData, setSelectedHomeTeamData] =
     useState<TeamData | null>(null);
   const [selectedAwayTeamData, setSelectedAwayTeamData] =
     useState<TeamData | null>(null);
 
-  // 初期チーム設定
+  // 初期チーム設定（縦長ピッチ 800x800 対応）
   const [homeTeam, setHomeTeam] = useState<Team>(() => {
     const defaultFormation = PRESET_FORMATIONS[0];
     return {
@@ -48,7 +45,8 @@ export const useMatchManager = () => {
         id: `away-${index}`,
         name: `選手${index + 1}`,
         number: index + 1,
-        position: { x: pos.x, y: 600 - pos.y }, // Y座標を反転（相手陣営）
+        // アウェイチームは上のゴールに向かって配置（Y座標をミラー反転）
+        position: { x: pos.x, y: 800 - pos.y },
         playerPosition:
           index === 0 ? "GK" : index < 5 ? "DF" : index < 8 ? "MF" : "FW",
         team: "away",
@@ -98,22 +96,34 @@ export const useMatchManager = () => {
     setHomeTeam({
       ...awayTeam,
       id: "home",
-      players: awayTeam.players.map((p) => ({
-        ...p,
-        id: p.id.replace("away-", "home-"),
-        team: "home",
-        position: { x: p.position.x, y: 600 - p.position.y },
-      })),
+      players: awayTeam.players.map((p) => {
+        // アウェイからホームに変わる時：800 - Y座標で反転
+        const newY = 800 - p.position.y;
+        const boundedY = Math.max(420, Math.min(775, newY));
+
+        return {
+          ...p,
+          id: p.id.replace("away-", "home-"),
+          team: "home",
+          position: { x: p.position.x, y: boundedY },
+        };
+      }),
     });
     setAwayTeam({
       ...tempTeam,
       id: "away",
-      players: tempTeam.players.map((p) => ({
-        ...p,
-        id: p.id.replace("home-", "away-"),
-        team: "away",
-        position: { x: p.position.x, y: 600 - p.position.y },
-      })),
+      players: tempTeam.players.map((p) => {
+        // ホームからアウェイに変わる時：800 - Y座標で反転
+        const newY = 800 - p.position.y;
+        const boundedY = Math.max(25, Math.min(380, newY));
+
+        return {
+          ...p,
+          id: p.id.replace("home-", "away-"),
+          team: "away",
+          position: { x: p.position.x, y: boundedY },
+        };
+      }),
     });
 
     // 選択中チームデータも入れ替え
@@ -124,14 +134,12 @@ export const useMatchManager = () => {
 
   return {
     // 状態
-    displayMode,
     homeTeam,
     awayTeam,
     selectedHomeTeamData,
     selectedAwayTeamData,
 
     // アクション
-    setDisplayMode,
     setHomeTeam,
     setAwayTeam,
     handleTeamSelect,

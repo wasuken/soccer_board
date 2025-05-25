@@ -16,7 +16,6 @@ const App: React.FC = () => {
   const dataManager = useDataManager({
     homeTeam: matchManager.homeTeam,
     awayTeam: matchManager.awayTeam,
-    displayMode: matchManager.displayMode,
     customFormations: formationManager.customFormations,
     homeSelectedFormation: formationManager.homeSelectedFormation,
     awaySelectedFormation: formationManager.awaySelectedFormation,
@@ -24,7 +23,6 @@ const App: React.FC = () => {
     selectedAwayTeamData: matchManager.selectedAwayTeamData,
     setHomeTeam: matchManager.setHomeTeam,
     setAwayTeam: matchManager.setAwayTeam,
-    setDisplayMode: matchManager.setDisplayMode,
     setCustomFormations: formationManager.setCustomFormations,
     setHomeSelectedFormation: formationManager.setHomeSelectedFormation,
     setAwaySelectedFormation: formationManager.setAwaySelectedFormation,
@@ -44,41 +42,7 @@ const App: React.FC = () => {
           <div className="card">
             <div className="card-body">
               <div className="row align-items-center">
-                <div className="col-md-4">
-                  <div className="btn-group w-100" role="group">
-                    <input
-                      type="radio"
-                      className="btn-check"
-                      name="displayMode"
-                      id="number-mode"
-                      checked={matchManager.displayMode === "number"}
-                      onChange={() => matchManager.setDisplayMode("number")}
-                    />
-                    <label
-                      className="btn btn-outline-primary"
-                      htmlFor="number-mode"
-                    >
-                      🔢 背番号表示
-                    </label>
-
-                    <input
-                      type="radio"
-                      className="btn-check"
-                      name="displayMode"
-                      id="initial-mode"
-                      checked={matchManager.displayMode === "initial"}
-                      onChange={() => matchManager.setDisplayMode("initial")}
-                    />
-                    <label
-                      className="btn btn-outline-primary"
-                      htmlFor="initial-mode"
-                    >
-                      🔤 イニシャル表示
-                    </label>
-                  </div>
-                </div>
-
-                <div className="col-md-4">
+                <div className="col-md-6">
                   <button
                     className="btn btn-outline-secondary w-100"
                     onClick={matchManager.swapTeams}
@@ -87,7 +51,7 @@ const App: React.FC = () => {
                   </button>
                 </div>
 
-                <div className="col-md-4">
+                <div className="col-md-6">
                   <div className="d-flex gap-2">
                     <button
                       className="btn btn-success flex-fill"
@@ -195,7 +159,6 @@ const App: React.FC = () => {
                       matchManager.setAwayTeam,
                     )
                   }
-                  displayMode={matchManager.displayMode}
                   highlightedPlayer={playerManager.highlightedPlayer}
                 />
               </div>
@@ -309,7 +272,7 @@ const App: React.FC = () => {
                 <div className="col-md-6">
                   <ul className="list-unstyled small mb-0">
                     <li>💾 データの保存・読み込み</li>
-                    <li>🔢 背番号/イニシャル切り替え</li>
+                    <li>📍 選手名表示とハイライト</li>
                     <li>📍 選手リストで強調表示</li>
                   </ul>
                 </div>
