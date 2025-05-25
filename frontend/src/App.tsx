@@ -38,9 +38,7 @@ const App: React.FC = () => {
       {/* ヘッダー */}
       <div className="row mb-4">
         <div className="col-12">
-          <h1 className="display-6 text-center mb-3">
-            ⚽ Soccer Tactical Board
-          </h1>
+          <h1 className="display-6 text-center mb-3">⚽ 蹴板</h1>
 
           <div className="card">
             <div className="card-body">
